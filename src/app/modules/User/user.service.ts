@@ -8,7 +8,7 @@ import config from "../../../config";
 
 const createUserIntoDB = async (payload: any) => {
   const hashedPassword: string = await bcrypt.hash(payload?.password, 12);
-
+  // console.log(payload);
   const userData: any = {
     name: payload.name,
     email: payload.email,
@@ -23,6 +23,8 @@ const createUserIntoDB = async (payload: any) => {
         ? payload?.userImageURL
         : `https://i.ibb.co/bsdYzV2/m1.jpg`,
   };
+
+  console.log(userData);
 
   const result = await prisma.$transaction(async (transactionClient) => {
     //    creating user
