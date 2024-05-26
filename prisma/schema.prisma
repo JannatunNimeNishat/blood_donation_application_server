@@ -1,0 +1,95 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL_LIVE")
+}
+
+
+// User model
+model User {
+  id             String      @id @default(uuid())
+  name           String
+  email          String      @unique
+  mobileNumber   String        
+  password       String
+  userImageURL   String     
+  bloodType      String
+  location       String
+  role           String     @default("user")
+  isDonor        Boolean    @default(true)
+  availability   String    @default("true")
+  accountType    String    @default("active")
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  // One-to-one relation with UserProfile
+  userProfile        UserProfile?
+  
+  // One-to-many relation with Request as donor
+  donorRequests  Request[]   @relation("DonorRequests")
+
+  // One-to-many relation with Request as requester
+  requesterRequests  Request[]   @relation("RequesterRequests")
+
+
+   @@map("user")
+}
+
+// Request model
+model Request {
+  id               String      @id @default(uuid())
+  donorId          String
+  requesterId      String
+  phoneNumber      String
+  dateOfDonation   String
+  hospitalName     String
+  hospitalAddress  String
+  reason           String
+  requestStatus    RequestStatus  @default(PENDING)
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  // Many-to-one relation with User as donor
+  donor            User        @relation("DonorRequests", fields: [donorId], references: [id])
+
+  // Many-to-one relation with User as requester
+  requester        User        @relation("RequesterRequests", fields: [requesterId], references: [id])
+
+
+   @@map("request")
+}
+
+// UserProfile model
+model UserProfile {
+  id                String      @id @default(uuid())
+  userId            String      @unique
+  bio               String
+  age               Int
+  lastDonationDate  String
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  
+  // One-to-one relation with User
+  user              User        @relation(fields: [userId], references: [id])
+
+  @@map("userProfile")
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+enum UserRole {
+  ADMIN
+  USER
+}
